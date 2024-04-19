@@ -1,7 +1,7 @@
 {
   "entryAssembly": "OrcamentoVinil",
   "resources": {
-    "hash": "sha256-tFL63Y6SeUoS9KTt3hPoYAQ69ympTa+CAstdWhj3Z54=",
+    "hash": "sha256-q+jY9SIruDvFZAMKSBm/0ZL82BCBOcd1M8RmOpPd6f4=",
     "runtime": {
       "dotnet.6.0.29.2xjs4qx1tr.js": "sha256-BV1wi9qAMCmpfZ+aXPplngN3cFgig0bFqWhNad3R5Lo=",
       "dotnet.timezones.blat": "sha256-csJ9EjcYXaAQrYK1S5WLY51YBLmp7zcST7wH0IDbvgg=",
@@ -25,7 +25,7 @@
       "Microsoft.Extensions.Primitives.dll": "sha256-QRewYnpJ6vl8gGMXBS2gN++/sQ9hKcuv+rhy586Bbxs=",
       "Microsoft.JSInterop.dll": "sha256-pd+3q1rqiaUu8N/2uzl05FN8LJIraOTmFs8rQP4IhDM=",
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-9cvWXucyYKpzZTdbC0MoUbJCbn4Qf6rJFO56YaDJM1U=",
-      "OrcamentoVinil.dll": "sha256-h5nzQtEL38iVLrPZYUzgAb8A05Wm4rwfTFSg/HPmo9M=",
+      "OrcamentoVinil.dll": "sha256-pB1O/CKKaWE0UmQdrNgYlFysmpXntYEp+eBZzO+8a6M=",
       "System.Collections.Concurrent.dll": "sha256-a3dRE2igHe37xBVO51K+6+1ddjXcxEg8B9U1jzWZwLQ=",
       "System.Collections.dll": "sha256-4/7+QFZq4piHOGF2G2Kg/uaEcfAga0qPvlSNt5znc8g=",
       "System.ComponentModel.dll": "sha256-F5jaw9eqeIxvgLJ8CaUZQc9sqFDm+JyqxM6pjgE8Kfs=",
