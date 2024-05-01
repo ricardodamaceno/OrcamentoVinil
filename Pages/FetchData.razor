@@ -1,5 +1,8 @@
 ﻿@page "/fetchdata"
-@inject HttpClient Http
+@using Newtonsoft.Json
+@using OrcamentoVinil.Models
+@using OrcamentoVinil.Util
+@using RestSharp
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -7,7 +10,7 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (forecasts == null)
+@if (lstMateriais == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -16,20 +19,20 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>ID</th>
+                <th>Descrição</th>
+                <th>Preço m²</th>
+                <th>Preço ml</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (Material material in lstMateriais)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@material.ID</td>
+                    <td>@material.Descricao</td>
+                    <td>@material.PrecoM2</td>
+                    <td>@material.PrecoML</td>
                 </tr>
             }
         </tbody>
@@ -37,21 +40,18 @@ else
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private List<Material>? lstMateriais;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest("//v1/Materiais", Method.Get);
+        request.AddHeader("accept", "*/*");
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if ((response.StatusCode == System.Net.HttpStatusCode.OK) || (response.StatusCode == System.Net.HttpStatusCode.Created))
+            lstMateriais = JsonConvert.DeserializeObject<List<Material>>(response.Content);
     }
 
-    public class WeatherForecast
-    {
-        public DateTime Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
 }
