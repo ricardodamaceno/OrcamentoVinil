@@ -10,6 +10,28 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
+<div>
+    <div class="row">
+        <div class="col-4">
+            <label for="descricao">Descrição:</label>
+            <input id="descricao" class="form-control" @bind="novaDescricao" />
+        </div>
+        <div class="col-4">
+            <label for="precoM2">Preço m²:</label>
+            <input id="precoM2" class="form-control" @bind="novoPrecoM2" />
+        </div>
+        <div class="col-4">
+            <label for="precoML">Preço ml:</label>
+            <input id="precoML" class="form-control" @bind="novoPrecoML" />
+        </div>
+    </div>
+    <div class="row my-3">
+        <div class="col-md-4">
+            <button class="btn btn-primary btn-block" @onclick="AdicionarMaterial">Adicionar Material</button>
+        </div>
+    </div>
+</div>
+
 @if (lstMateriais == null)
 {
     <p><em>Loading...</em></p>
@@ -41,8 +63,44 @@ else
 
 @code {
     private List<Material>? lstMateriais;
+    private string novaDescricao;
+    private decimal novoPrecoM2;
+    private decimal novoPrecoML;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
+    {
+        BuscarMateriais();
+        base.OnInitialized();
+    }
+    private async void AdicionarMaterial()
+    {
+        RequestMaterial novoMaterial = new RequestMaterial();
+
+        novoMaterial.Descricao = novaDescricao;
+        novoMaterial.PrecoM2 = novoPrecoM2;
+        novoMaterial.PrecoML = novoPrecoML;
+
+        string json = JsonConvert.SerializeObject(novoMaterial);
+
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest("//v1/Materiais", Method.Post);
+        request.AddHeader("accept", "*/*");
+        request.AddHeader("Content-Type", "application/json");
+        request.AddJsonBody(json);
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Created)
+        {
+            novaDescricao = string.Empty;
+            novoPrecoM2 = 0;
+            novoPrecoML = 0;
+
+            BuscarMateriais();
+        }
+    }
+
+    private async void BuscarMateriais()
     {
         var client = new RestClient(Constants.URL_BASE);
         var request = new RestRequest("//v1/Materiais", Method.Get);
@@ -50,8 +108,11 @@ else
 
         RestResponse response = await client.ExecuteAsync(request);
 
-        if ((response.StatusCode == System.Net.HttpStatusCode.OK) || (response.StatusCode == System.Net.HttpStatusCode.Created))
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
             lstMateriais = JsonConvert.DeserializeObject<List<Material>>(response.Content);
+            StateHasChanged();
+        }
     }
 
 }
