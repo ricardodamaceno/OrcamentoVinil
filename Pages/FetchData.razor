@@ -1,33 +1,44 @@
-﻿@page "/fetchdata"
+﻿@page "/materiais"
 @using Newtonsoft.Json
 @using OrcamentoVinil.Models
 @using OrcamentoVinil.Util
 @using RestSharp
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>Cadastro de Materiais</PageTitle>
 
-<h1>Weather forecast</h1>
+<style>
+    /* Oculta as setas de incremento e decremento em inputs do tipo number */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none; /* Remove a aparência padrão do navegador */
+        margin: 0; /* Remove a margem padrão */
+    }
 
-<p>This component demonstrates fetching data from the server.</p>
+    input[type=number] {
+        -moz-appearance: textfield; /* Firefox */
+    }
+</style>
+
+<h1>Cadastro de Materiais</h1>
 
 <div>
+    <div class="mb-3">
+        <label for="descricao">Descrição:</label>
+        <input id="descricao" class="form-control" @bind="novaDescricao" />
+    </div>
     <div class="row">
-        <div class="col-4">
-            <label for="descricao">Descrição:</label>
-            <input id="descricao" class="form-control" @bind="novaDescricao" />
-        </div>
-        <div class="col-4">
+        <div class="col-6">
             <label for="precoM2">Preço m²:</label>
-            <input id="precoM2" class="form-control" @bind="novoPrecoM2" />
+            <input type="number" id="precoM2" class="form-control" @bind="novoPrecoM2" />
         </div>
-        <div class="col-4">
+        <div class="col-6">
             <label for="precoML">Preço ml:</label>
-            <input id="precoML" class="form-control" @bind="novoPrecoML" />
+            <input type="number" id="precoML" class="form-control" @bind="novoPrecoML" />
         </div>
     </div>
     <div class="row my-3">
         <div class="col-md-4">
-            <button class="btn btn-primary btn-block" @onclick="AdicionarMaterial">Adicionar Material</button>
+            <button name="fasfa" class="btn btn-primary btn-block" @onclick="AdicionarOuAlterar">@alterarOuAdicionar</button>
         </div>
     </div>
 </div>
@@ -41,7 +52,7 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
+                <th hidden="hidden">ID</th>
                 <th>Descrição</th>
                 <th>Preço m²</th>
                 <th>Preço ml</th>
@@ -51,10 +62,18 @@ else
             @foreach (Material material in lstMateriais)
             {
                 <tr>
-                    <td>@material.ID</td>
+                    <td hidden ="hidden" >@material.ID</td>
                     <td>@material.Descricao</td>
                     <td>@material.PrecoM2</td>
                     <td>@material.PrecoML</td>
+                    <td>
+                        <button class="btn btn-primary my-1" @onclick="() => CarregarMaterial(material)">
+                            <img src="images/alterar.png" alt="Editar" style="width: 20px; height: 20px;" />
+                        </button>
+                        <button class="btn btn-danger my-1" @onclick="() => DeletarMaterial(material.ID)">
+                            <img src="images/remover.png" alt="Remover" style="width: 20px; height: 20px;" />
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -63,15 +82,19 @@ else
 
 @code {
     private List<Material>? lstMateriais;
-    private string novaDescricao;
+    private string novaDescricao = string.Empty;
+    private string alterarOuAdicionar = string.Empty;
     private decimal novoPrecoM2;
     private decimal novoPrecoML;
+    private int mateialID;
 
     protected override void OnInitialized()
     {
+        alterarOuAdicionar = "Adicionar";
         BuscarMateriais();
         base.OnInitialized();
     }
+
     private async void AdicionarMaterial()
     {
         RequestMaterial novoMaterial = new RequestMaterial();
@@ -100,6 +123,36 @@ else
         }
     }
 
+    private async void AlterarMaterial(int materialID)
+    {
+        RequestMaterial novoMaterial = new RequestMaterial();
+
+        novoMaterial.Descricao = novaDescricao;
+        novoMaterial.PrecoM2 = novoPrecoM2;
+        novoMaterial.PrecoML = novoPrecoML;
+
+        string json = JsonConvert.SerializeObject(novoMaterial);
+
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest($"/v1/Materiais?id={materialID}", Method.Put);
+        request.AddHeader("accept", "*/*");
+        request.AddHeader("Content-Type", "application/json");
+        request.AddJsonBody(json);
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            alterarOuAdicionar = "Adicionar";
+            mateialID = 0;
+            novaDescricao = string.Empty;
+            novoPrecoM2 = 0;
+            novoPrecoML = 0;
+
+            BuscarMateriais();
+        }
+    }
+
     private async void BuscarMateriais()
     {
         var client = new RestClient(Constants.URL_BASE);
@@ -110,9 +163,51 @@ else
 
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
-            lstMateriais = JsonConvert.DeserializeObject<List<Material>>(response.Content);
+            lstMateriais = JsonConvert.DeserializeObject<List<Material>>(response.Content).OrderByDescending(o => o.ID).ToList();
             StateHasChanged();
         }
+    }
+
+    private async void DeletarMaterial(int materialID)
+    {
+        await InvokeAsync(() =>
+        {
+            if (lstMateriais != null)
+                lstMateriais = null;
+        });
+
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest($"/v1/Materiais/{materialID}", Method.Delete);
+        request.AddHeader("accept", "*/*");
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            BuscarMateriais();
+    }
+
+    private void AdicionarOuAlterar()
+    {
+        if (string.IsNullOrEmpty(novaDescricao))
+            return;
+
+        if (lstMateriais != null)
+            lstMateriais = null;
+
+        if (alterarOuAdicionar == "Adicionar")
+            AdicionarMaterial();
+        else
+            AlterarMaterial(mateialID);
+    }
+
+    private void CarregarMaterial(Material material)
+    {
+        alterarOuAdicionar = "Alterar";
+
+        mateialID = material.ID;
+        novaDescricao = material.Descricao;
+        novoPrecoM2 = material.PrecoM2;
+        novoPrecoML = material.PrecoML;
     }
 
 }
