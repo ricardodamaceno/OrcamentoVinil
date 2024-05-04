@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrcamentoVinil", "OrcamentoVinil.csproj", "{9B7B744A-6AA0-4A7B-A90D-2055A4EE12D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrcamentoVinil", "OrcamentoVinil.csproj", "{9B7B744A-6AA0-4A7B-A90D-2055A4EE12D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

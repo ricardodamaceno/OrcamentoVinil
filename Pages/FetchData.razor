@@ -38,7 +38,7 @@
     </div>
     <div class="row my-3">
         <div class="col-md-4">
-            <button name="fasfa" class="btn btn-primary btn-block" @onclick="AdicionarOuAlterar">@alterarOuAdicionar</button>
+            <button class="btn btn-primary btn-block" @onclick="AdicionarOuAlterar">@alterarOuAdicionar</button>
         </div>
     </div>
 </div>
@@ -86,7 +86,7 @@ else
     private string alterarOuAdicionar = string.Empty;
     private decimal novoPrecoM2;
     private decimal novoPrecoML;
-    private int mateialID;
+    private int materialID;
 
     protected override void OnInitialized()
     {
@@ -99,7 +99,7 @@ else
     {
         RequestMaterial novoMaterial = new RequestMaterial();
 
-        novoMaterial.Descricao = novaDescricao;
+        novoMaterial.Descricao = novaDescricao.ToUpper();
         novoMaterial.PrecoM2 = novoPrecoM2;
         novoMaterial.PrecoML = novoPrecoML;
 
@@ -123,18 +123,18 @@ else
         }
     }
 
-    private async void AlterarMaterial(int materialID)
+    private async void AlterarMaterial(int paramMaterialID)
     {
         RequestMaterial novoMaterial = new RequestMaterial();
 
-        novoMaterial.Descricao = novaDescricao;
+        novoMaterial.Descricao = novaDescricao.ToUpper();
         novoMaterial.PrecoM2 = novoPrecoM2;
         novoMaterial.PrecoML = novoPrecoML;
 
         string json = JsonConvert.SerializeObject(novoMaterial);
 
         var client = new RestClient(Constants.URL_BASE);
-        var request = new RestRequest($"/v1/Materiais?id={materialID}", Method.Put);
+        var request = new RestRequest($"/v1/Materiais?id={paramMaterialID}", Method.Put);
         request.AddHeader("accept", "*/*");
         request.AddHeader("Content-Type", "application/json");
         request.AddJsonBody(json);
@@ -144,7 +144,7 @@ else
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             alterarOuAdicionar = "Adicionar";
-            mateialID = 0;
+            materialID = 0;
             novaDescricao = string.Empty;
             novoPrecoM2 = 0;
             novoPrecoML = 0;
@@ -197,14 +197,14 @@ else
         if (alterarOuAdicionar == "Adicionar")
             AdicionarMaterial();
         else
-            AlterarMaterial(mateialID);
+            AlterarMaterial(materialID);
     }
 
     private void CarregarMaterial(Material material)
     {
         alterarOuAdicionar = "Alterar";
 
-        mateialID = material.ID;
+        materialID = material.ID;
         novaDescricao = material.Descricao;
         novoPrecoM2 = material.PrecoM2;
         novoPrecoML = material.PrecoML;

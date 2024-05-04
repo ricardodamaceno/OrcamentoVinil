@@ -1,0 +1,172 @@
+﻿@page "/pecas"
+@using Newtonsoft.Json
+@using OrcamentoVinil.Models
+@using OrcamentoVinil.Util
+@using RestSharp
+
+<PageTitle>Cadastro de Peças</PageTitle>
+
+<h1>Cadastro de Peças</h1>
+
+<div class="mb-3">
+    <label for="descricao">Descrição:</label>
+    <input id="descricao" class="form-control" @bind="novaDescricao" />
+</div>
+
+<div class="row my-3">
+    <div class="col-md-4">
+        <button class="btn btn-primary btn-block" @onclick="AdicionarOuAlterar">@alterarOuAdicionar</button>
+    </div>
+</div>
+
+@if (lstPecas == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th hidden="hidden">ID</th>
+                <th>Descrição</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Peca peca in lstPecas)
+            {
+                <tr>
+                    <td hidden="hidden">@peca.ID</td>
+                    <td>@peca.Descricao</td>
+                    <td>
+                        <button class="btn btn-primary my-1" @onclick="() => CarregarPeca(peca)">
+                            <img src="images/alterar.png" alt="Editar" style="width: 20px; height: 20px;" />
+                        </button>
+                        <button class="btn btn-danger my-1" @onclick="() => DeletarPeca(peca.ID)">
+                            <img src="images/remover.png" alt="Remover" style="width: 20px; height: 20px;" />
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Peca>? lstPecas;
+    private string novaDescricao = string.Empty;
+    private string alterarOuAdicionar = string.Empty;
+    private int pecaID;
+
+    protected override void OnInitialized()
+    {
+        alterarOuAdicionar = "Adicionar";
+        BuscarPecas();
+        base.OnInitialized();
+    }
+
+    private async void AdicionarPeca()
+    {
+        RequestPeca novaPeca = new RequestPeca();
+
+        novaPeca.Descricao = novaDescricao.ToUpper();
+
+        string json = JsonConvert.SerializeObject(novaPeca);
+
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest("//v1/Pecas", Method.Post);
+        request.AddHeader("accept", "*/*");
+        request.AddHeader("Content-Type", "application/json");
+        request.AddJsonBody(json);
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Created)
+        {
+            novaDescricao = string.Empty;
+
+            BuscarPecas();
+        }
+    }
+
+    private async void AlterarPeca(int paramPecaID)
+    {
+        RequestPeca novaPeca = new RequestPeca();
+
+        novaPeca.Descricao = novaDescricao.ToUpper();
+
+        string json = JsonConvert.SerializeObject(novaPeca);
+
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest($"/v1/Pecas?id={paramPecaID}", Method.Put);
+        request.AddHeader("accept", "*/*");
+        request.AddHeader("Content-Type", "application/json");
+        request.AddJsonBody(json);
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            alterarOuAdicionar = "Adicionar";
+            pecaID = 0;
+            novaDescricao = string.Empty;
+
+            BuscarPecas();
+        }
+    }
+
+    private async void BuscarPecas()
+    {
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest("//v1/Pecas", Method.Get);
+        request.AddHeader("accept", "*/*");
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            lstPecas = JsonConvert.DeserializeObject<List<Peca>>(response.Content).OrderByDescending(o => o.ID).ToList();
+            StateHasChanged();
+        }
+    }
+
+    private async void DeletarPeca(int materialID)
+    {
+        await InvokeAsync(() =>
+        {
+            if (lstPecas != null)
+                lstPecas = null;
+        });
+
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest($"/v1/Pecas/{materialID}", Method.Delete);
+        request.AddHeader("accept", "*/*");
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            BuscarPecas();
+    }
+
+    private void AdicionarOuAlterar()
+    {
+        if (string.IsNullOrEmpty(novaDescricao))
+            return;
+
+        if (lstPecas != null)
+            lstPecas = null;
+
+        if (alterarOuAdicionar == "Adicionar")
+            AdicionarPeca();
+        else
+            AlterarPeca(pecaID);
+    }
+
+    private void CarregarPeca(Peca peca)
+    {
+        alterarOuAdicionar = "Alterar";
+
+        pecaID = peca.ID;
+        novaDescricao = peca.Descricao;
+    }
+}
