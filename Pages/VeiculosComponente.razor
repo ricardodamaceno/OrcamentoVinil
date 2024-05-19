@@ -1,0 +1,71 @@
+﻿@page "/veiculos"
+@using OrcamentoVinil.Pages.CustomComponentes
+
+<PageTitle>Veiculos</PageTitle>
+
+
+<div class="row my-3">
+    <div class="col-8">
+        <h1>Veículos</h1>
+    </div>
+    <div class="col-4">
+        <button class="btn btn-primary btn-block"></button>
+    </div>
+</div>
+<div>
+    <div class="row">
+        <div class="col-4">
+            <label for="marca">Marca:</label>
+            <input id="marca" class="form-control"/>
+        </div>
+        <div class="col-4">
+            <label for="modelo">Modelo:</label>
+            <input id="precoM2" class="form-control" />
+        </div>
+        <div class="col-4">
+            <label for="ano">Ano:</label>
+            <input id="ano" class="form-control"/>
+        </div>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th hidden="hidden">ID</th>
+            <th></th>
+            <th>Peca</th>
+            <th>Material</th>
+            <th>Tamanho m²</th>
+            <th>Tamanho ml</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var material in countries)
+        {
+            <tr>
+                <td hidden="hidden">@material</td>
+                <td><input class="form-check-input mt-0" type="checkbox" checked></td>
+                <td class="col-4">@material</td>
+                <td class="col-4"><Autocomplete Items="@countries" SelectedItemChanged="OnCountrySelected" /></td>
+                <td class="col-2"><input type="number" id="tamanhoM2" class="form-control" value="0" /></td>
+                <td class="col-2"><input type="number" id="tamanhoMl" class="form-control" value="0" /></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+<h4>Selected Country: @selectedCountry</h4>
+
+@code {
+    private List<string> countries = new List<string> { "USA", "Canada", "Brazil do brasileiros", "Germany", "Japan" };
+    private string selectedCountry = "";
+
+    private async Task OnCountrySelected(string selected)
+    {
+        selectedCountry = selected;
+        //await Task.CompletedTask; // Você pode remover isso se não precisar de nenhuma lógica adicional aqui
+    }
+}

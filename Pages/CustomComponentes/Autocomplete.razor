@@ -1,0 +1,58 @@
+﻿<div style="position: relative;">
+    <input type="text" class="form-control" @bind="@InputValue" @oninput="HandleInput" @onfocus="ShowAllItems" @onblur="HandleBlur" />
+    <div class="list-group" style="position: absolute; top: 100%; left: 0; z-index: 100;">
+        @foreach (var item in FilteredItems)
+        {
+            <a class="list-group-item list-group-item-action" @onclick="() => SelectItem(item)">@item</a>
+        }
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public IEnumerable<string> Items { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SelectedItemChanged { get; set; }
+
+    private string InputValue { get; set; } = "";
+    private IEnumerable<string> FilteredItems { get; set; } = Enumerable.Empty<string>();
+    private bool IsItemSelected { get; set; } = false;
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        InputValue = e.Value.ToString();
+        FilteredItems = Items.Where(item => item.IndexOf(InputValue, StringComparison.OrdinalIgnoreCase) >= 0);
+    }
+
+    private async Task SelectItem(string selectedItem)
+    {
+        IsItemSelected = true;
+        InputValue = selectedItem;
+        FilteredItems = Enumerable.Empty<string>();
+        await SelectedItemChanged.InvokeAsync(selectedItem);
+    }
+
+    private void ShowAllItems(FocusEventArgs e)
+    {
+        FilteredItems = Items.Take(3);
+    }
+
+    private async Task HandleBlur(FocusEventArgs e)
+    {
+        // Aguarde um curto período para ver se um item foi selecionado
+        await Task.Delay(200);
+
+        if (!IsItemSelected)
+        {
+            HideItems();
+        }
+        IsItemSelected = false;
+    }
+
+    private void HideItems()
+    {
+        FilteredItems = Enumerable.Empty<string>();
+    }
+}
