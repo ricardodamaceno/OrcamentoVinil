@@ -12,7 +12,7 @@
         <button class="btn btn-primary btn-block"></button>
     </div>
 </div>
-<div>
+<div class="container">
     <div class="row">
         <div class="col-4">
             <label for="marca">Marca:</label>
@@ -28,8 +28,53 @@
         </div>
     </div>
 </div>
+@foreach (var pecaMaterial in countries)
+{
+    <div class="container mt-2">
+        <div class="rounded border p-3 mb-3 bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <input class="form-check-input mt-1" type="checkbox" checked>
+                    <label for="peca">@pecaMaterial</label>
+                </div>
+                <label class="ml-auto" @onclick="() => ToggleTableVisibility(pecaMaterial)">
+                    @if (expandedTables.Contains(pecaMaterial))
+                    {
+                        <span class="oi oi-chevron-bottom"></span>
+                    }
+                    else
+                    {
+                        <span class="oi oi-chevron-right"></span>
+                    }
+                </label>
+            </div>
+            
+            
+            @if (expandedTables.Contains(pecaMaterial))
+            {
+                <table class="table mt-2">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Tamanho m²</th>
+                            <th>Tamanho ml</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="col-8"><Autocomplete Items="@countries" SelectedItemChanged="OnCountrySelected" /></td>
+                            <td class="col-2"><input type="number" id="tamanhoM2" class="form-control" value="0" /></td>
+                            <td class="col-2"><input type="number" id="tamanhoMl" class="form-control" value="0" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+}
 
-<table class="table">
+
+@* <table class="table">
     <thead>
         <tr>
             <th hidden="hidden">ID</th>
@@ -53,7 +98,7 @@
             </tr>
         }
     </tbody>
-</table>
+</table> *@
 
 
 
@@ -62,10 +107,23 @@
 @code {
     private List<string> countries = new List<string> { "USA", "Canada", "Brazil do brasileiros", "Germany", "Japan" };
     private string selectedCountry = "";
+    private HashSet<string> expandedTables = new HashSet<string>();
 
     private async Task OnCountrySelected(string selected)
     {
         selectedCountry = selected;
         //await Task.CompletedTask; // Você pode remover isso se não precisar de nenhuma lógica adicional aqui
+    }
+
+    private void ToggleTableVisibility(string pecaMaterial)
+    {
+        if (expandedTables.Contains(pecaMaterial))
+        {
+            expandedTables.Remove(pecaMaterial);
+        }
+        else
+        {
+            expandedTables.Add(pecaMaterial);
+        }
     }
 }

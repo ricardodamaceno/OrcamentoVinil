@@ -23,7 +23,7 @@
     private void HandleInput(ChangeEventArgs e)
     {
         InputValue = e.Value.ToString();
-        FilteredItems = Items.Where(item => item.IndexOf(InputValue, StringComparison.OrdinalIgnoreCase) >= 0);
+        FilteredItems = Items.Where(item => item.IndexOf(InputValue, StringComparison.OrdinalIgnoreCase) >= 0).Take(3);
     }
 
     private async Task SelectItem(string selectedItem)
