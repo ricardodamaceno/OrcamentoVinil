@@ -13,12 +13,12 @@
     </div>
 </div>
 <div class="container">
-    <div class="row">
-        <div class="col-4">
-            <label for="marca">Marca:</label>
-            <input id="marca" class="form-control"/>
-        </div>
-        <div class="col-4">
+    <div>
+        <label for="marca">Marca:</label>
+        <input id="marca" class="form-control" />
+    </div>
+    <div class="row mt-2">
+        <div class="col-8">
             <label for="modelo">Modelo:</label>
             <input id="precoM2" class="form-control" />
         </div>
@@ -33,11 +33,11 @@
     <div class="container mt-2">
         <div class="rounded border p-3 mb-3 bg-white">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <input class="form-check-input mt-1" type="checkbox" checked>
-                    <label for="peca">@pecaMaterial</label>
+                <div class="d-flex align-items-center">
+                    <input class="form-check-input mb-1" type="checkbox" checked>
+                    <label class="ms-2" for="peca">@pecaMaterial</label>
                 </div>
-                <label class="ml-auto" @onclick="() => ToggleTableVisibility(pecaMaterial)">
+                <button class="btn btn-link flex-grow-1 text-end no-outline" @onclick="() => ToggleTableVisibility(pecaMaterial)">
                     @if (expandedTables.Contains(pecaMaterial))
                     {
                         <span class="oi oi-chevron-bottom"></span>
@@ -46,7 +46,7 @@
                     {
                         <span class="oi oi-chevron-right"></span>
                     }
-                </label>
+                </button>
             </div>
             
             
