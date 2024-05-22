@@ -1,5 +1,9 @@
 ﻿@page "/veiculos"
+@using Newtonsoft.Json
+@using OrcamentoVinil.Models
 @using OrcamentoVinil.Pages.CustomComponentes
+@using OrcamentoVinil.Util
+@using RestSharp
 
 <PageTitle>Veiculos</PageTitle>
 
@@ -12,106 +16,94 @@
         <button class="btn btn-primary btn-block"></button>
     </div>
 </div>
-<div class="container">
+<div>
     <div>
-        <label for="marca">Marca:</label>
-        <input id="marca" class="form-control" />
+        <label>Marca:</label>
+        <input class="form-control" />
     </div>
     <div class="row mt-2">
         <div class="col-8">
-            <label for="modelo">Modelo:</label>
-            <input id="precoM2" class="form-control" />
+            <label >Modelo:</label>
+            <input class="form-control" />
         </div>
         <div class="col-4">
-            <label for="ano">Ano:</label>
-            <input id="ano" class="form-control"/>
+            <label>Ano:</label>
+            <input class="form-control"/>
         </div>
     </div>
 </div>
-@foreach (var pecaMaterial in countries)
+
+@if (lstPecas == null)
 {
-    <div class="container mt-2">
-        <div class="rounded border p-3 mb-3 bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <input class="form-check-input mb-1" type="checkbox" checked>
-                    <label class="ms-2" for="peca">@pecaMaterial</label>
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @foreach (string pecaMaterial in lstPecas.Select(o => o.Descricao))
+    {
+        <div class="row no-gutters mt-2">
+            <div class="rounded border p-3 mb-1 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <input class="form-check-input mb-1" type="checkbox" checked>
+                        <label class="ms-2" for="peca">@pecaMaterial</label>
+                    </div>
+                    <button class="btn btn-link flex-grow-1 text-end no-outline" @onclick="() => ToggleTableVisibility(pecaMaterial)">
+                        @if (expandedTables.Contains(pecaMaterial))
+                        {
+                            <span class="oi oi-chevron-bottom"></span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-chevron-right"></span>
+                        }
+                    </button>
                 </div>
-                <button class="btn btn-link flex-grow-1 text-end no-outline" @onclick="() => ToggleTableVisibility(pecaMaterial)">
-                    @if (expandedTables.Contains(pecaMaterial))
-                    {
-                        <span class="oi oi-chevron-bottom"></span>
-                    }
-                    else
-                    {
-                        <span class="oi oi-chevron-right"></span>
-                    }
-                </button>
+
+
+                @if (expandedTables.Contains(pecaMaterial))
+                {
+                    <table class="table mt-2">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>Tamanho m²</th>
+                                <th>Tamanho ml</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="col-8"><Autocomplete Items="@lstMateriaisAutocomplete" SelectedItemChanged="OnCountrySelected" /></td>
+                                <td class="col-2"><input type="number" id="tamanhoM2" class="form-control" value="0" /></td>
+                                <td class="col-2"><input type="number" id="tamanhoMl" class="form-control" value="0" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                }
             </div>
-            
-            
-            @if (expandedTables.Contains(pecaMaterial))
-            {
-                <table class="table mt-2">
-                    <thead>
-                        <tr>
-                            <th>Material</th>
-                            <th>Tamanho m²</th>
-                            <th>Tamanho ml</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="col-8"><Autocomplete Items="@countries" SelectedItemChanged="OnCountrySelected" /></td>
-                            <td class="col-2"><input type="number" id="tamanhoM2" class="form-control" value="0" /></td>
-                            <td class="col-2"><input type="number" id="tamanhoMl" class="form-control" value="0" /></td>
-                        </tr>
-                    </tbody>
-                </table>
-            }
         </div>
-    </div>
+    }
 }
 
 
-@* <table class="table">
-    <thead>
-        <tr>
-            <th hidden="hidden">ID</th>
-            <th></th>
-            <th>Peca</th>
-            <th>Material</th>
-            <th>Tamanho m²</th>
-            <th>Tamanho ml</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var material in countries)
-        {
-            <tr>
-                <td hidden="hidden">@material</td>
-                <td><input class="form-check-input mt-0" type="checkbox" checked></td>
-                <td class="col-4">@material</td>
-                <td class="col-4"><Autocomplete Items="@countries" SelectedItemChanged="OnCountrySelected" /></td>
-                <td class="col-2"><input type="number" id="tamanhoM2" class="form-control" value="0" /></td>
-                <td class="col-2"><input type="number" id="tamanhoMl" class="form-control" value="0" /></td>
-            </tr>
-        }
-    </tbody>
-</table> *@
-
-
-
-<h4>Selected Country: @selectedCountry</h4>
-
 @code {
-    private List<string> countries = new List<string> { "USA", "Canada", "Brazil do brasileiros", "Germany", "Japan" };
-    private string selectedCountry = "";
     private HashSet<string> expandedTables = new HashSet<string>();
+    private List<Veiculo>? lstVeiculos;
+    private List<Peca>? lstPecas;
+    private List<Material>? lstMateriais;
+    private IEnumerable<string> lstMateriaisAutocomplete = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        BuscarPecas();
+        BuscarMateriais();
+        BuscarVeiculos();
+        base.OnInitialized();
+    }
 
     private async Task OnCountrySelected(string selected)
     {
-        selectedCountry = selected;
+        // selectedCountry = selected;
         //await Task.CompletedTask; // Você pode remover isso se não precisar de nenhuma lógica adicional aqui
     }
 
@@ -124,6 +116,52 @@
         else
         {
             expandedTables.Add(pecaMaterial);
+        }
+    }
+
+    private async void BuscarVeiculos()
+    {
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest("/v1/Veiculo", Method.Get);
+        request.AddHeader("accept", "*/*");
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            lstVeiculos = JsonConvert.DeserializeObject<List<Veiculo>>(response.Content).OrderByDescending(o => o.ID).ToList();
+            StateHasChanged();
+        }
+    }
+
+    private async void BuscarPecas()
+    {
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest("//v1/Pecas", Method.Get);
+        request.AddHeader("accept", "*/*");
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            lstPecas = JsonConvert.DeserializeObject<List<Peca>>(response.Content).OrderByDescending(o => o.ID).ToList();
+            StateHasChanged();
+        }
+    }
+
+    private async void BuscarMateriais()
+    {
+        var client = new RestClient(Constants.URL_BASE);
+        var request = new RestRequest("//v1/Materiais", Method.Get);
+        request.AddHeader("accept", "*/*");
+
+        RestResponse response = await client.ExecuteAsync(request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            lstMateriais = JsonConvert.DeserializeObject<List<Material>>(response.Content).OrderByDescending(o => o.ID).ToList();
+            lstMateriaisAutocomplete = lstMateriais.Select(o => o.Descricao);
+            StateHasChanged();
         }
     }
 }
