@@ -5,7 +5,7 @@ namespace OrcamentoVinil.Models
     public class Veiculo
     {
         [JsonProperty("id")]
-        public int? ID { get; set; }
+        public int ID { get; set; }
 
         [JsonProperty("marca")]
         public string Marca { get; set; }
@@ -17,7 +17,7 @@ namespace OrcamentoVinil.Models
         public string Ano { get; set; }
 
         [JsonProperty("pecaMaterials")]
-        public List<PecaMaterial>? PecaMateriais { get; set; }
+        public List<PecaMaterial> PecaMateriais { get; set; }
     }
 
     public class PecaMaterial
