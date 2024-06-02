@@ -315,7 +315,6 @@ else
 		if (response.StatusCode == System.Net.HttpStatusCode.Created)
 		{
 			requestVeiculo = new RequestVeiculo { MateriaisVeiculo = new List<MaterialVeiculo>() };
-			StateHasChanged();
 			BuscarVeiculos();
 		}
 	}
