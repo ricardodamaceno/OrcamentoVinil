@@ -105,6 +105,12 @@ else
 										<td class="col-2"><input type="number" class="form-control" value="0" /></td>
 									}
 								}
+								else
+								{
+									<td class="col-8" @onclick="() => AtribuiPecaID(peca.ID)"><Autocomplete Items="@lstMateriaisAutocomplete" SelectedItemChanged="MaterialSelected" /></td>
+									<td class="col-2"><input type="number" class="form-control" value="0" /></td>
+									<td class="col-2"><input type="number" class="form-control" value="0" /></td>
+								}
 							</tr>
 						</tbody>
 					</table>
@@ -309,6 +315,7 @@ else
 		if (response.StatusCode == System.Net.HttpStatusCode.Created)
 		{
 			requestVeiculo = new RequestVeiculo { MateriaisVeiculo = new List<MaterialVeiculo>() };
+			StateHasChanged();
 			BuscarVeiculos();
 		}
 	}
