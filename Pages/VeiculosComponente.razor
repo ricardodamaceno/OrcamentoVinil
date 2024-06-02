@@ -9,231 +9,324 @@
 
 
 <div class="row my-3">
-    <div class="col-8">
-        <h1>Veículo</h1>
-    </div>
-    <div class="col-4">
-        <button class="btn btn-primary btn-block"></button>
-    </div>
+	<div class="col-8">
+		<h1>Veículo</h1>
+	</div>
+	<div class="col-4">
+		<button class="btn btn-primary btn-block" @onclick="AdicionarVeiculo">Adicionar</button>
+	</div>
 </div>
 <div class="row no-gutters">
-    <label>Marca:</label>
-    <input class="form-control" />
+	<label>Marca:</label>
+	<input class="form-control" @bind-value="requestVeiculo.Marca" />
 </div>
 <div class="mt-2 mb-2">
-    <div class="row">
-        <div class="row no-gutters col-8">
-            <label>Modelo:</label>
-            <input class="form-control" />
-        </div>
-        <div class="row no-gutters col-4 flex-grow-1 ms-1">
-            <label>Ano:</label>
-            <input class="form-control" />
-        </div>
-    </div>
+	<div class="row">
+		<div class="row no-gutters col-8">
+			<label>Modelo:</label>
+			<input class="form-control" @bind-value="requestVeiculo.Modelo" />
+		</div>
+		<div class="row no-gutters col-4 flex-grow-1 ms-1">
+			<label>Ano:</label>
+			<input class="form-control" @bind-value="requestVeiculo.Ano" />
+		</div>
+	</div>
 </div>
 
 @if (lstPecas == null)
 {
-    <p><em>Loading...</em></p>
+	<p><em>Loading...</em></p>
 }
 else
 {
-    @foreach (string peca in lstPecas.Select(o => o.Descricao))
-    {
-        <div class="row no-gutters mt-1">
-            <div class="rounded border p-3 mb-1 bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <input class="form-check-input mb-1" type="checkbox" checked>
-                        <label class="ms-2" for="peca">@peca</label>
-                    </div>
-                    <button class="btn btn-link flex-grow-1 text-end no-outline" @onclick="() => ToggleTableVisibility(peca)">
-                        @if (expandedTables.Contains(peca))
-                        {
-                            <span class="oi oi-chevron-bottom"></span>
-                        }
-                        else
-                        {
-                            <span class="oi oi-chevron-right"></span>
-                        }
-                    </button>
-                </div>
+	@foreach (Peca peca in lstPecas)
+	{
+		<div class="row no-gutters mt-1">
+			<div class="rounded border p-3 mb-1 bg-white">
+				<div class="d-flex justify-content-between align-items-center">
+					<div class="d-flex align-items-center">
+						@if (requestVeiculo.MateriaisVeiculo != null && requestVeiculo.MateriaisVeiculo.Any())
+						{
+							<input class="form-check-input mb-1" type="checkbox" checked @bind-value="requestVeiculo.MateriaisVeiculo.First().Ativo" />
+						}
+						else
+						{
+							<input class="form-check-input mb-1" type="checkbox" checked ="checked" />
+						}
+
+						<label class="ms-2" for="peca">@peca.Descricao</label>
+					</div>
+					<button class="btn btn-link flex-grow-1 text-end no-outline" @onclick="() => ToggleTableVisibility(peca.Descricao)">
+						@if (expandedTables.Contains(peca.Descricao))
+						{
+							<span class="oi oi-chevron-bottom"></span>
+						}
+						else
+						{
+							<span class="oi oi-chevron-right"></span>
+						}
+					</button>
+				</div>
 
 
-                @if (expandedTables.Contains(peca))
-                {
-                    <table class="table mt-2">
-                        <thead>
-                            <tr>
-                                <th>Material</th>
-                                <th>Tamanho m²</th>
-                                <th>Tamanho ml</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="col-8"><Autocomplete Items="@lstMateriaisAutocomplete" SelectedItemChanged="OnCountrySelected" /></td>
-                                <td class="col-2"><input type="number" id="tamanhoM2" class="form-control" value="0" /></td>
-                                <td class="col-2"><input type="number" id="tamanhoMl" class="form-control" value="0" /></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                }
-            </div>
-        </div>
-    }
+				@if (expandedTables.Contains(peca.Descricao))
+				{
+					<table class="table mt-2">
+						<thead>
+							<tr>
+								<th>Material</th>
+								<th>Tamanho m²</th>
+								<th>Tamanho ml</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								@if (requestVeiculo.MateriaisVeiculo != null && requestVeiculo.MateriaisVeiculo.Any())
+								{
+									var materialVeiculo = requestVeiculo.MateriaisVeiculo.FirstOrDefault(o => o.PecaID == peca.ID);
+									if (materialVeiculo != null && !string.IsNullOrEmpty(materialVeiculo.MaterialDescricao))
+									{
+										<td class="col-8">
+											<input class="form-control" @bind-value="materialVeiculo.MaterialDescricao" @oninput="(e) => OnMaterialDescricaoChanged(e, materialVeiculo)" />
+										</td>
+										<td class="col-2"><input type="number" class="form-control" @bind-value="materialVeiculo.MaterialTamanhoM2" /></td>
+										<td class="col-2"><input type="number" class="form-control" @bind-value="materialVeiculo.MaterialTamanhoML" /></td>
+									}
+									else if (materialVeiculo != null)
+									{
+										<td class="col-8" @onclick="() => AtribuiPecaID(peca.ID)"><Autocomplete Items="@lstMateriaisAutocomplete" SelectedItemChanged="MaterialSelected" /></td>
+										<td class="col-2"><input type="number" class="form-control" @bind-value="materialVeiculo.MaterialTamanhoM2" /></td>
+										<td class="col-2"><input type="number" class="form-control" @bind-value="materialVeiculo.MaterialTamanhoML" /></td>
+									}
+									else
+									{
+										<td class="col-8" @onclick="() => AtribuiPecaID(peca.ID)"><Autocomplete Items="@lstMateriaisAutocomplete" SelectedItemChanged="MaterialSelected" /></td>
+										<td class="col-2"><input type="number" class="form-control" value="0" /></td>
+										<td class="col-2"><input type="number" class="form-control" value="0" /></td>
+									}
+								}
+							</tr>
+						</tbody>
+					</table>
+				}
+			</div>
+		</div>
+	}
 }
 <h1 class="mt-5">Veículos Cadastrados</h1>
 @if (lstVeiculos == null)
 {
-    <p><em>Loading...</em></p>
+	<p><em>Loading...</em></p>
 }
 else
 {
-    @foreach (Veiculo veiculo in lstVeiculos)
-    {
-        <div class="row no-gutters mt-1">
-            <div class="rounded border p-3 mb-1 bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <label class="ms-2">@veiculo.Marca @veiculo.Modelo @veiculo.Ano</label>
-                    </div>
-                    <button class="btn btn-link flex-grow-1 text-end no-outline" @onclick="() => ToggleTableVisibilityVeiculo(veiculo.ID)">
-                        @if (expandedTablesVeiculo.Contains(veiculo.ID))
-                        {
-                            <span class="oi oi-chevron-bottom"></span>
-                        }
-                        else
-                        {
-                            <span class="oi oi-chevron-right"></span>
-                        }
-                    </button>
-                </div>
+	@foreach (Veiculo veiculo in lstVeiculos)
+	{
+		<div class="row no-gutters mt-1">
+			<div class="rounded border p-3 mb-1 bg-white">
+				<div class="d-flex justify-content-between align-items-center">
+					<div class="d-flex align-items-center">
+						<label class="ms-2">@veiculo.Marca @veiculo.Modelo @veiculo.Ano</label>
+					</div>
+					<button class="btn btn-link flex-grow-1 text-end no-outline" @onclick="() => ToggleTableVisibilityVeiculo(veiculo.ID)">
+						@if (expandedTablesVeiculo.Contains(veiculo.ID))
+						{
+							<span class="oi oi-chevron-bottom"></span>
+						}
+						else
+						{
+							<span class="oi oi-chevron-right"></span>
+						}
+					</button>
+				</div>
 
-                @if (expandedTablesVeiculo.Contains(veiculo.ID))
-                {
-                    @foreach (PecaMaterial componentes in veiculo.PecaMateriais)
-                    {
-                        <div class="rounded border container mt-1" style="background-color: lightgray;">
-                            <div class="mt-2 mb-2">
-                                <div class="row">
-                                    <div class="col-6 border rounded border border-secondary bg-white">
-                                        <label>Peça: @componentes.DescricaoPeca</label>
-                                    </div>
-                                    <div class="col-6 border rounded border border-secondary bg-white">
-                                        <label>Material: @componentes.DescricaoMaterial</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-2 mb-2">
-                                <div class="row">
-                                    <div class="col-6 border rounded border border-secondary bg-white">
-                                        <label>Material m²: @componentes.MaterialTamanhoM2 </label>
-                                    </div>
-                                    <div class="col-6 rounded border border-secondary bg-white">
-                                        <label>Material ml: @componentes.MaterialTamanhoML</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                }
-            </div>
-        </div>
-    }
+				@if (expandedTablesVeiculo.Contains(veiculo.ID))
+				{
+					@foreach (PecaMaterial componentes in veiculo.PecaMateriais)
+					{
+						<div class="rounded border container mt-1" style="background-color: lightgray;">
+							<div class="mt-2 mb-2">
+								<div class="row">
+									<div class="col-6 border rounded border border-secondary bg-white">
+										<label>Peça: @componentes.DescricaoPeca</label>
+									</div>
+									<div class="col-6 border rounded border border-secondary bg-white">
+										<label>Material: @componentes.DescricaoMaterial</label>
+									</div>
+								</div>
+							</div>
+							<div class="mt-2 mb-2">
+								<div class="row">
+									<div class="col-6 border rounded border border-secondary bg-white">
+										<label>Material m²: @componentes.MaterialTamanhoM2 </label>
+									</div>
+									<div class="col-6 rounded border border-secondary bg-white">
+										<label>Material ml: @componentes.MaterialTamanhoML</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					}
+				}
+			</div>
+		</div>
+	}
 }
 
 
 @code {
-    private HashSet<string> expandedTables = new HashSet<string>();
-    private HashSet<int> expandedTablesVeiculo = new HashSet<int>();
-    private List<Veiculo>? lstVeiculos;
-    private List<Peca>? lstPecas;
-    private List<Material>? lstMateriais;
-    private IEnumerable<string> lstMateriaisAutocomplete = new List<string>();
+	private HashSet<string> expandedTables = new HashSet<string>();
+	private HashSet<int> expandedTablesVeiculo = new HashSet<int>();
+	private List<Veiculo>? lstVeiculos;
+	private List<Peca>? lstPecas;
+	private List<Material>? lstMateriais;
+	private IEnumerable<string> lstMateriaisAutocomplete = new List<string>();
+	private RequestVeiculo requestVeiculo = new RequestVeiculo { MateriaisVeiculo = new List<MaterialVeiculo>() };
+	private int pecaTempID;
 
-    protected override void OnInitialized()
-    {
-        BuscarPecas();
-        BuscarMateriais();
-        BuscarVeiculos();
-        base.OnInitialized();
-    }
+	protected async override void OnInitialized()
+	{
+		await BuscarPecas();
+		BuscarMateriais();
+		BuscarVeiculos();
+		requestVeiculo.MateriaisVeiculo = lstPecas.Select(o => new MaterialVeiculo { PecaDescricao = o.Descricao, PecaID = o.ID }).ToList();
+		base.OnInitialized();
+	}
 
-    private async Task OnCountrySelected(string selected)
-    {
-        // selectedCountry = selected;
-        //await Task.CompletedTask; // Você pode remover isso se não precisar de nenhuma lógica adicional aqui
-    }
+	private async Task MaterialSelected(string material)
+	{
+		requestVeiculo.MateriaisVeiculo.FirstOrDefault(o => o.PecaID == pecaTempID).MaterialDescricao = material;
+		requestVeiculo.MateriaisVeiculo.FirstOrDefault(o => o.PecaID == pecaTempID).MaterialID = lstMateriais.FirstOrDefault(o => o.Descricao == material).ID;
 
-    private void ToggleTableVisibility(string pecaMaterial)
-    {
-        if (expandedTables.Contains(pecaMaterial))
-        {
-            expandedTables.Remove(pecaMaterial);
-        }
-        else
-        {
-            expandedTables.Add(pecaMaterial);
-        }
-    }
+		//pecaTempID = 0;
+		//await Task.CompletedTask; // Você pode remover isso se não precisar de nenhuma lógica adicional aqui
+	}
 
-    private void ToggleTableVisibilityVeiculo(int veiculoID)
-    {
-        if (expandedTablesVeiculo.Contains(veiculoID))
-        {
-            expandedTablesVeiculo.Remove(veiculoID);
-        }
-        else
-        {
-            expandedTablesVeiculo.Add(veiculoID);
-        }
-    }
+	private void ToggleTableVisibility(string pecaMaterial)
+	{
+		if (expandedTables.Contains(pecaMaterial))
+		{
+			expandedTables.Remove(pecaMaterial);
+		}
+		else
+		{
+			expandedTables.Add(pecaMaterial);
+		}
+	}
 
-    private async void BuscarVeiculos()
-    {
-        var client = new RestClient(Constants.URL_BASE);
-        var request = new RestRequest("/v1/Veiculo", Method.Get);
-        request.AddHeader("accept", "*/*");
+	private void ToggleTableVisibilityVeiculo(int veiculoID)
+	{
+		if (expandedTablesVeiculo.Contains(veiculoID))
+		{
+			expandedTablesVeiculo.Remove(veiculoID);
+		}
+		else
+		{
+			expandedTablesVeiculo.Add(veiculoID);
+		}
+	}
 
-        RestResponse response = await client.ExecuteAsync(request);
+	private async void BuscarVeiculos()
+	{
+		var client = new RestClient(Constants.URL_BASE);
+		var request = new RestRequest("/v1/Veiculo", Method.Get);
+		request.AddHeader("accept", "*/*");
 
-        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-        {
-            lstVeiculos = JsonConvert.DeserializeObject<List<Veiculo>>(response.Content).OrderByDescending(o => o.ID).ToList();
-            StateHasChanged();
-        }
-    }
+		RestResponse response = await client.ExecuteAsync(request);
 
-    private async void BuscarPecas()
-    {
-        var client = new RestClient(Constants.URL_BASE);
-        var request = new RestRequest("//v1/Pecas", Method.Get);
-        request.AddHeader("accept", "*/*");
+		if (response.StatusCode == System.Net.HttpStatusCode.OK)
+		{
+			lstVeiculos = JsonConvert.DeserializeObject<List<Veiculo>>(response.Content).OrderByDescending(o => o.ID).ToList();
+			StateHasChanged();
+		}
+	}
 
-        RestResponse response = await client.ExecuteAsync(request);
+	private async Task BuscarPecas()
+	{
+		var client = new RestClient(Constants.URL_BASE);
+		var request = new RestRequest("//v1/Pecas", Method.Get);
+		request.AddHeader("accept", "*/*");
 
-        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-        {
-            lstPecas = JsonConvert.DeserializeObject<List<Peca>>(response.Content).OrderByDescending(o => o.ID).ToList();
-            StateHasChanged();
-        }
-    }
+		RestResponse response = await client.ExecuteAsync(request);
 
-    private async void BuscarMateriais()
-    {
-        var client = new RestClient(Constants.URL_BASE);
-        var request = new RestRequest("//v1/Materiais", Method.Get);
-        request.AddHeader("accept", "*/*");
+		if (response.StatusCode == System.Net.HttpStatusCode.OK)
+		{
+			lstPecas = JsonConvert.DeserializeObject<List<Peca>>(response.Content).OrderByDescending(o => o.ID).ToList();
+			StateHasChanged();
+		}
+	}
 
-        RestResponse response = await client.ExecuteAsync(request);
+	private async void BuscarMateriais()
+	{
+		var client = new RestClient(Constants.URL_BASE);
+		var request = new RestRequest("//v1/Materiais", Method.Get);
+		request.AddHeader("accept", "*/*");
 
-        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-        {
-            lstMateriais = JsonConvert.DeserializeObject<List<Material>>(response.Content).OrderByDescending(o => o.ID).ToList();
-            lstMateriaisAutocomplete = lstMateriais.Select(o => o.Descricao);
-            StateHasChanged();
-        }
-    }
+		RestResponse response = await client.ExecuteAsync(request);
+
+		if (response.StatusCode == System.Net.HttpStatusCode.OK)
+		{
+			lstMateriais = JsonConvert.DeserializeObject<List<Material>>(response.Content).OrderByDescending(o => o.ID).ToList();
+			lstMateriaisAutocomplete = lstMateriais.Select(o => o.Descricao);
+			StateHasChanged();
+		}
+	}
+
+	private async void AdicionarVeiculo()
+	{
+		if (!requestVeiculo.MateriaisVeiculo.Any(o => o.MaterialID > 0))
+			return;
+
+		RequestVeiculo novoVeiculo = new RequestVeiculo();
+		novoVeiculo.Marca = requestVeiculo.Marca.ToUpper();
+		novoVeiculo.Modelo = requestVeiculo.Modelo.ToUpper();
+		novoVeiculo.Ano = requestVeiculo.Ano.ToUpper();
+
+		novoVeiculo.MateriaisVeiculo = new List<MaterialVeiculo>();
+
+		foreach (MaterialVeiculo material in requestVeiculo.MateriaisVeiculo.Where(o => o.MaterialID > 0 && o.Ativo))
+		{
+			MaterialVeiculo novoMaterial = new MaterialVeiculo();
+			novoMaterial.PecaDescricao = material.PecaDescricao;
+			novoMaterial.PecaID = material.PecaID;
+			novoMaterial.MaterialDescricao = material.MaterialDescricao;
+			novoMaterial.MaterialID = material.MaterialID;
+			novoMaterial.MaterialTamanhoM2 = material.MaterialTamanhoM2;
+			novoMaterial.MaterialTamanhoML = material.MaterialTamanhoML;
+
+			novoVeiculo.MateriaisVeiculo.Add(novoMaterial);
+		}
+
+		string json = JsonConvert.SerializeObject(novoVeiculo);
+
+		var client = new RestClient(Constants.URL_BASE);
+		var request = new RestRequest("/v1/Veiculo", Method.Post);
+		request.AddHeader("Content-Type", "application/json");
+		request.AddJsonBody(json);
+
+		RestResponse response = await client.ExecuteAsync(request);
+
+		if (response.StatusCode == System.Net.HttpStatusCode.Created)
+		{
+			requestVeiculo = new RequestVeiculo { MateriaisVeiculo = new List<MaterialVeiculo>() };
+			BuscarVeiculos();
+		}
+	}
+
+	private void AtribuiPecaID(int pecaID)
+	{
+		pecaTempID = pecaID;
+	}
+
+	private void OnMaterialDescricaoChanged(ChangeEventArgs e, MaterialVeiculo materialVeiculo)
+	{
+		string newValue = e.Value?.ToString();
+		if (string.IsNullOrEmpty(newValue))
+		{
+			requestVeiculo.MateriaisVeiculo.FirstOrDefault(o => o.PecaID == pecaTempID).MaterialDescricao = null;
+			requestVeiculo.MateriaisVeiculo.FirstOrDefault(o => o.PecaID == pecaTempID).MaterialID = 0;
+			StateHasChanged();
+		}
+	}
+
 }
