@@ -14,12 +14,12 @@ namespace OrcamentoVinil.Models
         [JsonProperty("ano")]
         public string Ano { get; set; }
 
-        [JsonProperty("materiaisVeiculo")]
-        public List<MaterialVeiculo> MateriaisVeiculo { get; set; }
+        [JsonProperty("pecaVeiculoRequest")]
+        public List<RequestPecaVeiculo> PecasVeiculo { get; set; }
     }
 
-    public class MaterialVeiculo
-    {
+    public class RequestPecaVeiculo
+	{
         [JsonIgnore]
         public bool Ativo { get; set; } = true;
 
@@ -29,16 +29,10 @@ namespace OrcamentoVinil.Models
         [JsonProperty("pecaID")]
         public int PecaID { get; set; }
 
-        [JsonIgnore]
-        public string? MaterialDescricao { get; set; }
+        [JsonProperty("tamanhoM2")]
+        public int TamanhoM2 { get; set; }
 
-        [JsonProperty("materialID")]
-        public int MaterialID { get; set; }
-
-        [JsonProperty("materialTamanhoM2")]
-        public int MaterialTamanhoM2 { get; set; }
-
-        [JsonProperty("materialTamanhoML")]
-        public int MaterialTamanhoML { get; set; }
+        [JsonProperty("tamanhoML")]
+        public int TamanhoML { get; set; }
     }
 }
